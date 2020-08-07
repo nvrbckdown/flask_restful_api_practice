@@ -3,28 +3,34 @@ from flask_restful import Resource
 
 class Say_hello(Resource):
     def get(self):
-        return Validation_and_Response.response("Hello World", 200)
+        return Calculations.response("Hello World", 200)
 
 
 class Repeater(Resource):
     def post(self):
-        validate = Validation_and_Response()
         coming_data = request.get_json()
-        if validate.message_field_validation(coming_data) == 301:
-            return validate.response("Missing value", 301)
+        res = Responses()
+        if self.message_field_validation(coming_data) == 301:
+            return res.response("Missing value", 301)
         else:
-            return validate.response(data_from_user["Message"], 200)
+            return res.response(coming_data["Message"], 200)
+
+    def message_field_validation(self):
+        if "Message" not in coming_data:
+            return 301
+        else:
+            return 200
 
 
 class Arithmetic_operation(Resource):
     """Arithmetic operation handler"""
     def post(self):
         data_from_user = request.get_json()
-        math_operations = Validation_and_Response(data=data_from_user)
+        math_operations = Calculations(data=data_from_user)
         return math_operations.arithmetic_operation()
 
 
-class Validation_and_Response():
+class Calculations():
     """Main logic of App"""
     coming_data = {}
 
@@ -32,14 +38,14 @@ class Validation_and_Response():
         self.coming_data = data
 
     def arithmetic_operation(self):
+        res = Responses()
         validation = self.data_validation()
         if validation == 301:
-            return self.response("Missing value", 301)
+            return res.response("Missing value", 301)
         elif validation == 405:
-            return self.response("Method not allowed", 405)
+            return res.response("Method not allowed", 405)
         else:
-            return self.response(self.calculate(), 200)
-
+            return res.response(self.calculate(), 200)
 
     def calculate(self):
         operation = self.coming_data['operation']
@@ -57,14 +63,6 @@ class Validation_and_Response():
             return "Incorrect Operation!"
         return z
 
-
-    def message_field_validation(self):
-        if "Message" not in self.coming_data:
-            return 301
-        else:
-            return 200
-
-
     def data_validation(self):
         if "var_x" not in self.coming_data or "var_y" not in self.coming_data:
             return 301
@@ -73,6 +71,10 @@ class Validation_and_Response():
         else:
             return 200
 
+
+class Responses():
+    message = "Success!"
+    status_code = 200
 
     def response(self, message, status_code):
         resJSON = {
